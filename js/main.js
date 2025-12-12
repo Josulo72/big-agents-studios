@@ -4,14 +4,15 @@
 const SUPABASE_URL = 'https://kkmppwpubwsknqumjblw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbXBwd3B1Yndza25xdW1qYmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDcwMDIsImV4cCI6MjA4MDYyMzAwMn0.4CtdZFN9TjU6jyMszl_V6fC4wiqlbaH0yYyrm9Tui2E';
 
-// Usar el objeto global de la CDN v2 (Supabase con S mayúscula)
+// Verificar que Supabase CDN esté cargado
 if (typeof Supabase === 'undefined') {
-    console.error('Supabase CDN no se ha cargado correctamente');
-} else {
-    window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.error('❌ Supabase CDN no se ha cargado correctamente');
+    alert('Error: No se pudo cargar Supabase. Recarga la página.');
+    throw new Error('Supabase CDN no disponible');
 }
 
-const supabaseClient = window.supabase;
+// Crear cliente Supabase
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ========================================
 // NAVEGACIÓN MÓVIL
@@ -82,7 +83,7 @@ if (registroForm) {
             const password = formData.get('password');
 
             // 1. Crear usuario en Auth
-            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            const { data: authData, error: authError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -98,9 +99,13 @@ if (registroForm) {
 
             // Si por cualquier motivo no viene en authData, intentar recuperarlo
             if (!userId) {
-                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError) throw sessionError;
                 userId = sessionData?.session?.user?.id || null;
+            }
+
+            if (!userId) {
+                throw new Error('No se pudo obtener el ID de usuario');
             }
 
             // 2. Guardar datos en tabla empresas
@@ -120,7 +125,7 @@ if (registroForm) {
                 aprobado: false
             };
 
-            const { error: dbError } = await supabaseClient
+            const { error: dbError } = await supabase
                 .from('empresas')
                 .insert([empresaData]);
 
@@ -157,7 +162,7 @@ if (loginForm) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
 
             // Guardar sesión
@@ -168,7 +173,7 @@ if (loginForm) {
                 window.location.href = 'admin-dashboard.html';
             } else {
                 // Verificar si está aprobado
-                const { data: empresa } = await supabaseClient
+                const { data: empresa } = await supabase
                     .from('empresas')
                     .select('aprobado')
                     .eq('email', email)
@@ -206,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const parsed = JSON.parse(session);
-            const { data: { user } } = await supabaseClient.auth.getUser(parsed.access_token);
+            const { data: { user } } = await supabase.auth.getUser(parsed.access_token);
             if (!user) throw new Error('Sesión inválida');
         } catch {
             localStorage.removeItem('userSession');
@@ -220,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ========================================
 async function logout() {
     if (confirm('¿Cerrar sesión?')) {
-        await supabaseClient.auth.signOut();
+        await supabase.auth.signOut();
         localStorage.removeItem('userSession');
         window.location.href = 'index.html';
     }
@@ -259,4 +264,4 @@ document.querySelectorAll('.faq-item').forEach(item => {
     }
 });
 
-console.log('Big Agents Studio - Sistema inicializado con Supabase Auth');
+console.log('✅ Big Agents Studio - Sistema inicializado con Supabase Auth');
