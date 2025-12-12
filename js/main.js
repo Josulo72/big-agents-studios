@@ -4,12 +4,14 @@
 const SUPABASE_URL = 'https://kkmppwpubwsknqumjblw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbXBwd3B1Yndza25xdW1qYmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDcwMDIsImV4cCI6MjA4MDYyMzAwMn0.4CtdZFN9TjU6jyMszl_V6fC4wiqlbaH0yYyrm9Tui2E';
 
-// Crear cliente de Supabase desde el CDN
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Usar el objeto global de la CDN v2 (Supabase con S mayúscula)
+if (typeof Supabase === 'undefined') {
+    console.error('Supabase CDN no se ha cargado correctamente');
+} else {
+    window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
-// Exponer globalmente para que otros scripts lo usen
-window.supabase = supabaseClient;
+const supabaseClient = window.supabase;
 
 // ========================================
 // NAVEGACIÓN MÓVIL
