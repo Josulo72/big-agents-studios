@@ -4,7 +4,12 @@
 const SUPABASE_URL = 'https://kkmppwpubwsknqumjblw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbXBwd3B1Yndza25xdW1qYmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDcwMDIsImV4cCI6MjA4MDYyMzAwMn0.4CtdZFN9TjU6jyMszl_V6fC4wiqlbaH0yYyrm9Tui2E';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Crear cliente de Supabase desde el CDN
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Exponer globalmente para que otros scripts lo usen
+window.supabase = supabaseClient;
 
 // ========================================
 // NAVEGACIÓN MÓVIL
@@ -75,7 +80,7 @@ if (registroForm) {
             const password = formData.get('password');
 
             // 1. Crear usuario en Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                 email,
                 password,
                 options: {
@@ -91,7 +96,7 @@ if (registroForm) {
 
             // Si por cualquier motivo no viene en authData, intentar recuperarlo
             if (!userId) {
-                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError) throw sessionError;
                 userId = sessionData?.session?.user?.id || null;
             }
@@ -113,7 +118,7 @@ if (registroForm) {
                 aprobado: false
             };
 
-            const { error: dbError } = await supabase
+            const { error: dbError } = await supabaseClient
                 .from('empresas')
                 .insert([empresaData]);
 
@@ -150,7 +155,7 @@ if (loginForm) {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
 
             // Guardar sesión
@@ -161,7 +166,7 @@ if (loginForm) {
                 window.location.href = 'admin-dashboard.html';
             } else {
                 // Verificar si está aprobado
-                const { data: empresa } = await supabase
+                const { data: empresa } = await supabaseClient
                     .from('empresas')
                     .select('aprobado')
                     .eq('email', email)
@@ -199,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const parsed = JSON.parse(session);
-            const { data: { user } } = await supabase.auth.getUser(parsed.access_token);
+            const { data: { user } } = await supabaseClient.auth.getUser(parsed.access_token);
             if (!user) throw new Error('Sesión inválida');
         } catch {
             localStorage.removeItem('userSession');
@@ -213,7 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ========================================
 async function logout() {
     if (confirm('¿Cerrar sesión?')) {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         localStorage.removeItem('userSession');
         window.location.href = 'index.html';
     }
