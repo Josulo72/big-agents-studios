@@ -86,9 +86,19 @@ if (registroForm) {
 
             if (authError) throw authError;
 
+            // === OBTENER EL ID DE USUARIO DE FORMA SEGURA ===
+            let userId = authData?.user?.id;
+
+            // Si por cualquier motivo no viene en authData, intentar recuperarlo
+            if (!userId) {
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) throw sessionError;
+                userId = sessionData?.session?.user?.id || null;
+            }
+
             // 2. Guardar datos en tabla empresas
             const empresaData = {
-                user_id: authData.user.id,
+                user_id: userId,
                 nombre_empresa: formData.get('nombreEmpresa'),
                 cif: formData.get('cif'),
                 industria: formData.get('industria'),
@@ -210,7 +220,7 @@ async function logout() {
 }
 
 // ========================================
-// RESTO DE TU CÓDIGO ORIGINAL (notificaciones, FAQ, etc.)
+// NOTIFICACIONES
 // ========================================
 function showNotification(message, type = 'info') {
     const existing = document.querySelector('.notification');
@@ -228,7 +238,9 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// FAQ Accordion, animaciones, contacto simulado, etc. (todo lo que ya tenías)
+// ========================================
+// FAQ ACCORDION
+// ========================================
 document.querySelectorAll('.faq-item').forEach(item => {
     const question = item.querySelector('.faq-question');
     if (question) {
