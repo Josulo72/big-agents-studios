@@ -129,14 +129,14 @@
 
             if (error) throw error;
 
-            // Usamos 'estado' para los contadores
+            // Usamos 'estado' para contadores
             const pendientes = empresas.filter(e => e.estado === 'pendiente');
             const activas = empresas.filter(e => e.estado === 'aprobada');
 
             contadorPendientes.textContent = pendientes.length;
             contadorActivas.textContent = activas.length;
 
-            // --- Solicitudes Pendientes ---
+            // Pendientes
             if (!pendientes.length) {
                 pendientesEl.innerHTML = '<p style="color: var(--text-gray); padding: 20px; text-align: center;">No hay solicitudes pendientes.</p>';
             } else {
@@ -172,12 +172,12 @@
                 document.querySelectorAll('.btn-aprobar').forEach(btn => {
                     btn.addEventListener('click', () => aprobarEmpresa(btn.dataset.userId));
                 });
-                document.querySelectorAll('.btn-rechazar').forEach(btn => {
+                document.querySelectorAll('.btn-rechazar').forEach	btn => {
                     btn.addEventListener('click', () => rechazarEmpresa(btn.dataset.userId));
                 });
             }
 
-            // --- Todas las empresas ---
+            // Todas las empresas
             if (!empresas.length) {
                 listaEl.innerHTML = '<p style="color: var(--text-gray); padding: 20px; text-align: center;">Aún no hay empresas registradas.</p>';
             } else {
