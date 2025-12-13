@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Empresa - Big Agents Studio</title>
+
     <!-- Supabase UMD v2 -->
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -41,16 +43,25 @@
             Completa el formulario para solicitar acceso a Big Agents Studio
         </p>
 
-        <form id="registroForm" action="" method="POST">
+        <!-- FORMULARIO REGISTRO -->
+        <form id="registroForm" method="POST">
             <div class="form-group">
                 <label for="nombreEmpresa">Nombre de la Empresa *</label>
-                <input type="text" id="nombreEmpresa" name="nombreEmpresa" required 
+                <input
+                    type="text"
+                    id="nombreEmpresa"
+                    name="nombreEmpresa"
+                    required
                     placeholder="Ej: Innovation Tech S.L.">
             </div>
 
             <div class="form-group">
                 <label for="cif">CIF/NIF *</label>
-                <input type="text" id="cif" name="cif" required 
+                <input
+                    type="text"
+                    id="cif"
+                    name="cif"
+                    required
                     placeholder="Ej: B12345678">
             </div>
 
@@ -85,37 +96,59 @@
 
             <div class="form-group">
                 <label for="nombreContacto">Nombre del Contacto *</label>
-                <input type="text" id="nombreContacto" name="nombreContacto" required 
+                <input
+                    type="text"
+                    id="nombreContacto"
+                    name="nombreContacto"
+                    required
                     placeholder="Tu nombre completo">
             </div>
 
             <div class="form-group">
                 <label for="cargoContacto">Cargo *</label>
-                <input type="text" id="cargoContacto" name="cargoContacto" required 
+                <input
+                    type="text"
+                    id="cargoContacto"
+                    name="cargoContacto"
+                    required
                     placeholder="Ej: Director de Tecnología">
             </div>
 
             <div class="form-group">
                 <label for="email">Email Corporativo *</label>
-                <input type="email" id="email" name="email" required 
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
                     placeholder="tu.email@empresa.com">
             </div>
 
             <div class="form-group">
                 <label for="telefono">Teléfono *</label>
-                <input type="tel" id="telefono" name="telefono" required 
+                <input
+                    type="tel"
+                    id="telefono"
+                    name="telefono"
+                    required
                     placeholder="+34 600 000 000">
             </div>
 
             <div class="form-group">
                 <label for="sitioWeb">Sitio Web de la Empresa</label>
-                <input type="url" id="sitioWeb" name="sitioWeb" 
+                <input
+                    type="url"
+                    id="sitioWeb"
+                    name="sitioWeb"
                     placeholder="https://www.tuempresa.com">
             </div>
 
             <div class="form-group">
                 <label for="necesidades">¿Qué necesidades tiene tu empresa? *</label>
-                <textarea id="necesidades" name="necesidades" required 
+                <textarea
+                    id="necesidades"
+                    name="necesidades"
+                    required
                     placeholder="Describe brevemente qué procesos quieres automatizar con agentes de IA..."></textarea>
             </div>
 
@@ -132,8 +165,13 @@
 
             <div class="form-group">
                 <label for="password">Contraseña para acceder a tu panel *</label>
-                <input type="password" id="password" name="password" required 
-                    minlength="8" placeholder="Mínimo 8 caracteres">
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    minlength="8"
+                    placeholder="Mínimo 8 caracteres">
                 <small style="color: var(--text-gray); font-size: 13px; display: block; margin-top: 5px;">
                     Esta contraseña la usarás para iniciar sesión después de ser aprobado
                 </small>
@@ -143,7 +181,7 @@
                 <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
                     <input type="checkbox" required style="width: auto; margin-top: 5px;">
                     <span style="color: var(--text-gray); font-size: 14px;">
-                        Acepto los <a href="#" style="color: var(--accent-orange);">términos y condiciones</a> 
+                        Acepto los <a href="#" style="color: var(--accent-orange);">términos y condiciones</a>
                         y la <a href="#" style="color: var(--accent-orange);">política de privacidad</a> *
                     </span>
                 </label>
@@ -152,7 +190,8 @@
             <button type="submit" class="btn-submit">Enviar Solicitud de Registro</button>
 
             <p style="text-align: center; margin-top: 20px; color: var(--text-gray); font-size: 14px;">
-                ¿Ya tienes cuenta? <a href="login.html" style="color: var(--accent-orange);">Inicia sesión aquí</a>
+                ¿Ya tienes cuenta?
+                <a href="login.html" style="color: var(--accent-orange);">Inicia sesión aquí</a>
             </p>
         </form>
     </div>
@@ -168,7 +207,9 @@
                             <span class="logo-studio">STUDIO</span>
                         </div>
                     </div>
-                    <p class="footer-desc">Diseñamos, configuramos y gobernamos agentes de IA especializados.</p>
+                    <p class="footer-desc">
+                        Diseñamos, configuramos y gobernamos agentes de IA especializados.
+                    </p>
                 </div>
                 <div class="footer-section">
                     <h4>Enlaces</h4>
@@ -193,6 +234,7 @@
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="js/main.js"></script>
 </body>
 </html>

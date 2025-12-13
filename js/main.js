@@ -1,267 +1,311 @@
-// ========================================
-// CONFIGURACIÓN SUPABASE
-// ========================================
-const SUPABASE_URL = 'https://kkmppwpubwsknqumjblw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbXBwd3B1Yndza25xdW1qYmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDcwMDIsImV4cCI6MjA4MDYyMzAwMn0.4CtdZFN9TjU6jyMszl_V6fC4wiqlbaH0yYyrm9Tui2E';
+// main.js
 
-// Verificar que Supabase CDN esté cargado
-if (typeof Supabase === 'undefined') {
-    console.error('❌ Supabase CDN no se ha cargado correctamente');
-    alert('Error: No se pudo cargar Supabase. Recarga la página.');
-    throw new Error('Supabase CDN no disponible');
+// ===============================
+// 1. Inicialización de Supabase
+// ===============================
+(function () {
+  // Comprobar que el CDN de Supabase se ha cargado
+  if (!window.supabase) {
+    console.error("Supabase CDN no se ha cargado correctamente");
+    throw new Error("Supabase CDN no disponible");
+  }
+
+  // CREDENCIALES DE TU PROYECTO SUPABASE
+  // ------------------------------------
+  // URL de tu proyecto (esta viene de tu panel de Supabase)
+  const SUPABASE_URL = "https://kkmppwpubwsknqumjblw.supabase.co";
+
+  // ANON KEY de tu proyecto (copiar COMPLETA desde Supabase → Settings → API)
+  // OJO: cambia SOLO el valor del string manteniendo las comillas.
+  const SUPABASE_ANON_KEY =
+    "PON_AQUI_TU_SUPABASE_ANON_KEY_COMPLETA_ENTRE_COMILLAS";
+
+  // Cliente global
+  window.supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  console.log("Supabase inicializado correctamente");
+})();
+
+// Helper para obtener el cliente en cualquier parte
+function getSupabaseClient() {
+  if (!window.supabaseClient) {
+    throw new Error("SupabaseClient no está inicializado");
+  }
+  return window.supabaseClient;
 }
 
-// Crear cliente Supabase
-const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ===============================
+// 2. Lógica común UI (navbar, etc.)
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  // Hamburguesa menú móvil (si existe)
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("navMenu");
 
-// ========================================
-// NAVEGACIÓN MÓVIL
-// ========================================
-const hamburger = document.getElementById('hamburger');
-const navMenu = document.getElementById('navMenu');
-
-if (hamburger) {
-    hamburger.addEventListener('click', () => {
-        navMenu.classList.toggle('active');
-        hamburger.classList.toggle('active');
+  if (hamburger && navMenu) {
+    hamburger.addEventListener("click", () => {
+      navMenu.classList.toggle("open");
+      hamburger.classList.toggle("open");
     });
-}
+  }
 
-document.querySelectorAll('.nav-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        hamburger.classList.remove('active');
-    });
+  // Inicializar la lógica específica según la página
+  initAuthPages();
+  initProtectedPage();
 });
 
-// ========================================
-// SCROLL SUAVE + NAVBAR SCROLL
-// ========================================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href === '#' || href === '#!') return;
-        const target = document.querySelector(href);
-        if (!target) return;
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-});
+// ===============================
+// 3. Lógica de autenticación
+//    (login + registro)
+// ===============================
+function initAuthPages() {
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registroForm");
 
-let lastScroll = 0;
-const navbar = document.querySelector('.navbar');
-if (navbar) {
-    window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-        if (currentScroll > 100) {
-            navbar.style.background = 'rgba(10, 22, 40, 0.98)';
-            navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.3)';
-        } else {
-            navbar.style.background = 'rgba(10, 22, 40, 0.95)';
-            navbar.style.boxShadow = 'none';
-        }
-        lastScroll = currentScroll;
-    });
-}
+  const supabase = getSupabaseClient();
 
-// ========================================
-// REGISTRO DE EMPRESA (Auth + DB)
-// ========================================
-const registroForm = document.getElementById('registroForm');
-if (registroForm) {
-    registroForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = registroForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Registrando...';
-        submitBtn.disabled = true;
-        
-        try {
-            const formData = new FormData(registroForm);
-            const email = formData.get('email').trim();
-            const password = formData.get('password');
+  // ---- LOGIN ----
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-            // 1. Crear usuario en Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { role: 'empresa' },
-                    emailRedirectTo: window.location.origin + '/empresa-panel.html'
-                }
-            });
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
 
-            if (authError) throw authError;
+      if (!emailInput || !passwordInput) {
+        console.error("Campos de login no encontrados en el DOM");
+        alert("Error interno: campos de login no encontrados.");
+        return;
+      }
 
-            // === OBTENER EL ID DE USUARIO DE FORMA SEGURA ===
-            let userId = authData?.user?.id;
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
 
-            // Si por cualquier motivo no viene en authData, intentar recuperarlo
-            if (!userId) {
-                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-                if (sessionError) throw sessionError;
-                userId = sessionData?.session?.user?.id || null;
-            }
+      if (!email || !password) {
+        alert("Por favor, introduce email y contraseña.");
+        return;
+      }
 
-            if (!userId) {
-                throw new Error('No se pudo obtener el ID de usuario');
-            }
-
-            // 2. Guardar datos en tabla empresas
-            const empresaData = {
-                user_id: userId,
-                nombre_empresa: formData.get('nombreEmpresa'),
-                cif: formData.get('cif'),
-                industria: formData.get('industria'),
-                tamano: formData.get('tamano'),
-                nombre_contacto: formData.get('nombreContacto'),
-                cargo_contacto: formData.get('cargoContacto'),
-                email,
-                telefono: formData.get('telefono'),
-                sitio_web: formData.get('sitioWeb') || null,
-                necesidades: formData.get('necesidades'),
-                presupuesto: formData.get('presupuesto'),
-                aprobado: false
-            };
-
-            const { error: dbError } = await supabase
-                .from('empresas')
-                .insert([empresaData]);
-
-            if (dbError) throw dbError;
-
-            showNotification('¡Solicitud enviada! Revisa tu email para confirmar.', 'success');
-            registroForm.reset();
-            setTimeout(() => window.location.href = 'index.html', 3000);
-
-        } catch (error) {
-            console.error('Error registro:', error);
-            showNotification('Error: ' + error.message, 'error');
-        } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-}
-
-// ========================================
-// LOGIN (Supabase Auth)
-// ========================================
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Iniciando sesión...';
-        submitBtn.disabled = true;
-
-        try {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-
-            // Guardar sesión
-            localStorage.setItem('userSession', JSON.stringify(data.session));
-
-            // Admin directo
-            if (email === 'jrollon@gmail.com' || data.user?.user_metadata?.role === 'admin') {
-                window.location.href = 'admin-dashboard.html';
-            } else {
-                // Verificar si está aprobado
-                const { data: empresa } = await supabase
-                    .from('empresas')
-                    .select('aprobado')
-                    .eq('email', email)
-                    .single();
-
-                if (empresa && !empresa.aprobado) {
-                    throw new Error('Tu cuenta aún no ha sido aprobada.');
-                }
-
-                window.location.href = 'empresa-panel.html';
-            }
-
-        } catch (error) {
-            showNotification('Error: ' + error.message, 'error');
-        } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-}
-
-// ========================================
-// PROTECCIÓN DE RUTAS
-// ========================================
-document.addEventListener('DOMContentLoaded', async () => {
-    const protectedPages = ['empresa-panel.html', 'admin-dashboard.html'];
-    const currentPage = window.location.pathname.split('/').pop();
-
-    if (protectedPages.includes(currentPage)) {
-        const session = localStorage.getItem('userSession');
-        if (!session) {
-            window.location.href = 'login.html';
-            return;
-        }
-
-        try {
-            const parsed = JSON.parse(session);
-            const { data: { user } } = await supabase.auth.getUser(parsed.access_token);
-            if (!user) throw new Error('Sesión inválida');
-        } catch {
-            localStorage.removeItem('userSession');
-            window.location.href = 'login.html';
-        }
-    }
-});
-
-// ========================================
-// LOGOUT
-// ========================================
-async function logout() {
-    if (confirm('¿Cerrar sesión?')) {
-        await supabase.auth.signOut();
-        localStorage.removeItem('userSession');
-        window.location.href = 'index.html';
-    }
-}
-
-// ========================================
-// NOTIFICACIONES
-// ========================================
-function showNotification(message, type = 'info') {
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.classList.add('show'), 10);
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
-}
-
-// ========================================
-// FAQ ACCORDION
-// ========================================
-document.querySelectorAll('.faq-item').forEach(item => {
-    const question = item.querySelector('.faq-question');
-    if (question) {
-        question.addEventListener('click', () => {
-            const isActive = item.classList.contains('active');
-            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-            if (!isActive) item.classList.add('active');
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-    }
-});
 
-console.log('✅ Big Agents Studio - Sistema inicializado con Supabase Auth');
+        if (error) {
+          console.error("Error al iniciar sesión:", error);
+          alert("Error al iniciar sesión: " + error.message);
+          return;
+        }
+
+        console.log("Login correcto:", data);
+
+        // Redirigir al panel de administración
+        window.location.href = "admin-dashboard.html";
+      } catch (err) {
+        console.error("Error inesperado en login:", err);
+        alert("Ha ocurrido un error inesperado al iniciar sesión.");
+      }
+    });
+  }
+
+  // ---- REGISTRO ----
+  if (registerForm) {
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nombreEmpresaInput = document.getElementById("nombreEmpresa");
+      const cifInput = document.getElementById("cif");
+      const industriaInput = document.getElementById("industria");
+      const tamanoInput = document.getElementById("tamano");
+      const nombreContactoInput = document.getElementById("nombreContacto");
+      const cargoContactoInput = document.getElementById("cargoContacto");
+      const emailInput = document.getElementById("email");
+      const telefonoInput = document.getElementById("telefono");
+      const sitioWebInput = document.getElementById("sitioWeb");
+      const necesidadesInput = document.getElementById("necesidades");
+      const presupuestoInput = document.getElementById("presupuesto");
+      const passwordInput = document.getElementById("password");
+
+      if (
+        !nombreEmpresaInput ||
+        !cifInput ||
+        !industriaInput ||
+        !tamanoInput ||
+        !nombreContactoInput ||
+        !cargoContactoInput ||
+        !emailInput ||
+        !telefonoInput ||
+        !necesidadesInput ||
+        !presupuestoInput ||
+        !passwordInput
+      ) {
+        console.error("Campos de registro no encontrados en el DOM");
+        alert("Error interno: campos de registro no encontrados.");
+        return;
+      }
+
+      const empresa = nombreEmpresaInput.value.trim();
+      const cif = cifInput.value.trim();
+      const industria = industriaInput.value;
+      const tamano = tamanoInput.value;
+      const nombreContacto = nombreContactoInput.value.trim();
+      const cargoContacto = cargoContactoInput.value.trim();
+      const email = emailInput.value.trim();
+      const telefono = telefonoInput.value.trim();
+      const sitioWeb = sitioWebInput ? sitioWebInput.value.trim() : "";
+      const necesidades = necesidadesInput.value.trim();
+      const presupuesto = presupuestoInput.value;
+      const password = passwordInput.value;
+
+      if (
+        !empresa ||
+        !cif ||
+        !industria ||
+        !tamano ||
+        !nombreContacto ||
+        !cargoContacto ||
+        !email ||
+        !telefono ||
+        !necesidades ||
+        !presupuesto ||
+        !password
+      ) {
+        alert("Por favor, completa todos los campos obligatorios.");
+        return;
+      }
+
+      try {
+        // 1) Crear usuario de autenticación
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              empresa,
+              cif,
+            },
+          },
+        });
+
+        if (error) {
+          console.error("Error al registrar usuario:", error);
+          alert("Error al registrar: " + error.message);
+          return;
+        }
+
+        console.log("Registro correcto (auth):", data);
+
+        // 2) Insertar en la tabla 'empresas'
+        if (data.user) {
+          const { error: insertError } = await supabase.from("empresas").insert({
+            id: data.user.id,
+            nombre_empresa: empresa,
+            cif: cif,
+            industria: industria,
+            tamano: tamano,
+            nombre_contacto: nombreContacto,
+            cargo_contacto: cargoContacto,
+            email: email,
+            telefono: telefono,
+            sitio_web: sitioWeb || null,
+            necesidades: necesidades,
+            presupuesto: presupuesto,
+            aprobado: false,
+            created_at: new Date().toISOString(),
+          });
+
+          if (insertError) {
+            console.error(
+              "Usuario creado pero error insertando en empresas:",
+              insertError
+            );
+          }
+        }
+
+        alert(
+          "Registro correcto. Revisa tu email si tienes confirmación activada, o espera a que un administrador apruebe tu cuenta."
+        );
+        window.location.href = "login.html";
+      } catch (err) {
+        console.error("Error inesperado en registro:", err);
+        alert("Ha ocurrido un error inesperado al registrar la empresa.");
+      }
+    });
+  }
+}
+
+// ===============================
+// 4. Protección de rutas
+//    (admin-dashboard.html)
+// ===============================
+async function initProtectedPage() {
+  // Solo se ejecuta en admin-dashboard.html
+  const isAdminDashboard = window.location.pathname.endsWith(
+    "admin-dashboard.html"
+  );
+  if (!isAdminDashboard) return;
+
+  const supabase = getSupabaseClient();
+
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Error al obtener sesión:", error);
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (!session) {
+      console.warn("No hay sesión activa, redirigiendo a login...");
+      window.location.href = "login.html";
+      return;
+    }
+
+    console.log("Sesión activa:", session);
+  } catch (err) {
+    console.error("Error inesperado comprobando sesión:", err);
+    window.location.href = "login.html";
+  }
+
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error al cerrar sesión:", error);
+        alert("Error al cerrar sesión: " + error.message);
+        return;
+      }
+      window.location.href = "login.html";
+    });
+  }
+}
+
+// ===============================
+// 5. Función global de logout
+//    (para el enlace onclick="logout()")
+// ===============================
+async function logout() {
+  try {
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error al cerrar sesión:", error);
+      alert("Error al cerrar sesión: " + error.message);
+      return;
+    }
+  } catch (err) {
+    console.error("Error inesperado al cerrar sesión:", err);
+  } finally {
+    window.location.href = "login.html";
+  }
+}

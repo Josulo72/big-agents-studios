@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Big Agents Studio - Agentes de IA Especializados</title>
-    <!-- Supabase UMD v2 -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -55,9 +53,18 @@
                 </div>
 
                 <div class="trust-row">
-                    <div class="trust-item"><span class="trust-kpi">2–4</span><span class="trust-label">semanas de implementación</span></div>
-                    <div class="trust-item"><span class="trust-kpi">Auditables</span><span class="trust-label">logs + trazabilidad</span></div>
-                    <div class="trust-item"><span class="trust-kpi">Humano</span><span class="trust-label">control en decisiones clave</span></div>
+                    <div class="trust-item">
+                        <span class="trust-kpi">2–4</span>
+                        <span class="trust-label">semanas de implementación</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-kpi">Auditables</span>
+                        <span class="trust-label">logs + trazabilidad</span>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-kpi">Humano</span>
+                        <span class="trust-label">control en decisiones clave</span>
+                    </div>
                 </div>
             </div>
 
@@ -132,17 +139,29 @@
                 <div class="usecase-card">
                     <h3>Redacción y revisión</h3>
                     <p>Contratos, informes, emails y documentación con consistencia y checklists.</p>
-                    <div class="tag-row"><span class="tag">Plantillas</span><span class="tag">Revisión</span><span class="tag">Trazabilidad</span></div>
+                    <div class="tag-row">
+                        <span class="tag">Plantillas</span>
+                        <span class="tag">Revisión</span>
+                        <span class="tag">Trazabilidad</span>
+                    </div>
                 </div>
                 <div class="usecase-card">
                     <h3>Análisis y reporting</h3>
                     <p>Resúmenes, extracción de puntos clave, cuadros de mando y alertas.</p>
-                    <div class="tag-row"><span class="tag">Dashboards</span><span class="tag">Alertas</span><span class="tag">KPIs</span></div>
+                    <div class="tag-row">
+                        <span class="tag">Dashboards</span>
+                        <span class="tag">Alertas</span>
+                        <span class="tag">KPIs</span>
+                    </div>
                 </div>
                 <div class="usecase-card">
                     <h3>Atención al cliente</h3>
                     <p>Respuestas rápidas con escalado a humano y control en comunicaciones sensibles.</p>
-                    <div class="tag-row"><span class="tag">Multicanal</span><span class="tag">Escalado</span><span class="tag">Calidad</span></div>
+                    <div class="tag-row">
+                        <span class="tag">Multicanal</span>
+                        <span class="tag">Escalado</span>
+                        <span class="tag">Calidad</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -238,11 +257,13 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
-
     <a class="whatsapp-float" href="https://wa.me/" target="_blank" rel="noopener" aria-label="Hablar por WhatsApp">
         <span class="wa-dot"></span>
         <span class="wa-text">HABLAR POR WHATSAPP</span>
     </a>
+
+    <!-- Scripts al final: mismo patrón que en el resto de páginas -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
