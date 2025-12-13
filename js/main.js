@@ -12,13 +12,9 @@
 
   // CREDENCIALES DE TU PROYECTO SUPABASE
   // ------------------------------------
-  // URL de tu proyecto (esta viene de tu panel de Supabase)
   const SUPABASE_URL = "https://kkmppwpubwsknqumjblw.supabase.co";
-
-  // ANON KEY de tu proyecto (copiar COMPLETA desde Supabase → Settings → API)
-  // OJO: cambia SOLO el valor del string manteniendo las comillas.
   const SUPABASE_ANON_KEY =
-    "PON_AQUI_TU_SUPABASE_ANON_KEY_COMPLETA_ENTRE_COMILLAS";
+    "sb_publishable_lRVrzVTsE31OgjmqUuMazQ_asFyeVSf";
 
   // Cliente global
   window.supabaseClient = window.supabase.createClient(
