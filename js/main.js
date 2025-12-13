@@ -4,19 +4,15 @@
 // 1. Inicialización de Supabase
 // ===============================
 (function () {
-  // Comprobar que el CDN de Supabase se ha cargado
   if (!window.supabase) {
     console.error("Supabase CDN no se ha cargado correctamente");
     throw new Error("Supabase CDN no disponible");
   }
 
-  // CREDENCIALES DE TU PROYECTO SUPABASE
-  // ------------------------------------
   const SUPABASE_URL = "https://kkmppwpubwsknqumjblw.supabase.co";
   const SUPABASE_ANON_KEY =
     "sb_publishable_lRVrzVTsE31OgjmqUuMazQ_asFyeVSf";
 
-  // Cliente global
   window.supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
@@ -25,7 +21,6 @@
   console.log("Supabase inicializado correctamente");
 })();
 
-// Helper para obtener el cliente en cualquier parte
 function getSupabaseClient() {
   if (!window.supabaseClient) {
     throw new Error("SupabaseClient no está inicializado");
@@ -34,10 +29,9 @@ function getSupabaseClient() {
 }
 
 // ===============================
-// 2. Lógica común UI (navbar, etc.)
+// 2. Lógica común UI
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
-  // Hamburguesa menú móvil (si existe)
   const hamburger = document.getElementById("hamburger");
   const navMenu = document.getElementById("navMenu");
 
@@ -48,22 +42,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Inicializar la lógica específica según la página
   initAuthPages();
   initProtectedPage();
 });
 
 // ===============================
-// 3. Lógica de autenticación
-//    (login + registro)
+// 3. Autenticación (login + registro)
 // ===============================
 function initAuthPages() {
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registroForm");
-
   const supabase = getSupabaseClient();
 
-  // ---- LOGIN ----
+  // LOGIN
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -72,7 +63,6 @@ function initAuthPages() {
       const passwordInput = document.getElementById("password");
 
       if (!emailInput || !passwordInput) {
-        console.error("Campos de login no encontrados en el DOM");
         alert("Error interno: campos de login no encontrados.");
         return;
       }
@@ -98,8 +88,6 @@ function initAuthPages() {
         }
 
         console.log("Login correcto:", data);
-
-        // Redirigir al panel de administración
         window.location.href = "admin-dashboard.html";
       } catch (err) {
         console.error("Error inesperado en login:", err);
@@ -108,7 +96,7 @@ function initAuthPages() {
     });
   }
 
-  // ---- REGISTRO ----
+  // REGISTRO
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -139,7 +127,6 @@ function initAuthPages() {
         !presupuestoInput ||
         !passwordInput
       ) {
-        console.error("Campos de registro no encontrados en el DOM");
         alert("Error interno: campos de registro no encontrados.");
         return;
       }
@@ -175,7 +162,7 @@ function initAuthPages() {
       }
 
       try {
-        // 1) Crear usuario de autenticación
+        // 1) Crear usuario auth
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -195,7 +182,7 @@ function initAuthPages() {
 
         console.log("Registro correcto (auth):", data);
 
-        // 2) Insertar en la tabla 'empresas'
+        // 2) Insertar en 'empresas'
         if (data.user) {
           const { error: insertError } = await supabase.from("empresas").insert({
             id: data.user.id,
@@ -210,8 +197,10 @@ function initAuthPages() {
             sitio_web: sitioWeb || null,
             necesidades: necesidades,
             presupuesto: presupuesto,
+            estado: "pendiente",
             aprobado: false,
             created_at: new Date().toISOString(),
+            user_id: data.user.id,
           });
 
           if (insertError) {
@@ -223,7 +212,7 @@ function initAuthPages() {
         }
 
         alert(
-          "Registro correcto. Revisa tu email si tienes confirmación activada, o espera a que un administrador apruebe tu cuenta."
+          "Registro correcto. Tu empresa queda pendiente de aprobación por un administrador."
         );
         window.location.href = "login.html";
       } catch (err) {
@@ -235,11 +224,9 @@ function initAuthPages() {
 }
 
 // ===============================
-// 4. Protección de rutas
-//    (admin-dashboard.html)
+// 4. Protección de admin-dashboard
 // ===============================
 async function initProtectedPage() {
-  // Solo se ejecuta en admin-dashboard.html
   const isAdminDashboard = window.location.pathname.endsWith(
     "admin-dashboard.html"
   );
@@ -287,8 +274,7 @@ async function initProtectedPage() {
 }
 
 // ===============================
-// 5. Función global de logout
-//    (para el enlace onclick="logout()")
+// 5. Logout global (onclick="logout()")
 // ===============================
 async function logout() {
   try {

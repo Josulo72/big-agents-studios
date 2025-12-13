@@ -129,8 +129,9 @@
 
             if (error) throw error;
 
-            const pendientes = empresas.filter(e => !e.aprobado);
-            const activas = empresas.filter(e => e.aprobado);
+            // USAMOS 'estado'
+            const pendientes = empresas.filter(e => e.estado === 'pendiente');
+            const activas = empresas.filter(e => e.estado === 'aprobada');
 
             contadorPendientes.textContent = pendientes.length;
             contadorActivas.textContent = activas.length;
@@ -145,25 +146,25 @@
                     card.style.cssText = 'background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 15px;';
 
                     card.innerHTML = `
-                        <h4 style="margin: 0 0 10px 0; color: var(--text-white);">${e.nombre_empresa}</h4>
-                        <p style="margin: 5px 0; color: var(--text-gray); font-size: 14px; line-height: 1.6;">
-                            <strong>CIF:</strong> ${e.cif}<br>
-                            <strong>Contacto:</strong> ${e.nombre_contacto} (${e.cargo_contacto})<br>
-                            <strong>Email:</strong> ${e.email}<br>
-                            <strong>Teléfono:</strong> ${e.telefono}<br>
-                            <strong>Industria:</strong> ${e.industria} | <strong>Tamaño:</strong> ${e.tamano}<br>
-                            <strong>Presupuesto:</strong> ${e.presupuesto}<br>
-                            ${e.sitio_web ? `<strong>Web:</strong> <a href="${e.sitio_web}" target="_blank" style="color: var(--accent-cyan);">${e.sitio_web}</a><br>` : ''}
-                            <strong>Necesidades:</strong> ${e.necesidades}
-                        </p>
-                        <div style="display: flex; gap: 10px; margin-top: 15px;">
-                            <button class="btn-aprobar" data-id="${e.id}" style="background: #4ade80; color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                                ✓ Aprobar
-                            </button>
-                            <button class="btn-rechazar" data-id="${e.id}" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                                ✗ Rechazar
-                            </button>
-                        </div>
+                    <h4 style="margin: 0 0 10px 0; color: var(--text-white);">${e.nombre_empresa}</h4>
+                    <p style="margin: 5px 0; color: var(--text-gray); font-size: 14px; line-height: 1.6;">
+                        <strong>CIF:</strong> ${e.cif}<br>
+                        <strong>Contacto:</strong> ${e.nombre_contacto} (${e.cargo_contacto})<br>
+                        <strong>Email:</strong> ${e.email}<br>
+                        <strong>Teléfono:</strong> ${e.telefono}<br>
+                        <strong>Industria:</strong> ${e.industria} | <strong>Tamaño:</strong> ${e.tamano}<br>
+                        <strong>Presupuesto:</strong> ${e.presupuesto}<br>
+                        ${e.sitio_web ? `<strong>Web:</strong> <a href="${e.sitio_web}" target="_blank" style="color: var(--accent-cyan);">${e.sitio_web}</a><br>` : ''}
+                        <strong>Necesidades:</strong> ${e.necesidades}
+                    </p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-aprobar" data-id="${e.id}" style="background: #4ade80; color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                            ✓ Aprobar
+                        </button>
+                        <button class="btn-rechazar" data-id="${e.id}" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                            ✗ Rechazar
+                        </button>
+                    </div>
                     `;
                     pendientesEl.appendChild(card);
                 });
@@ -189,8 +190,20 @@
                                     ${e.email} — ${e.nombre_contacto}
                                 </p>
                             </div>
-                            <span style="color: ${e.aprobado ? '#4ade80' : '#fbbf24'}; font-weight: 600; font-size: 14px;">
-                                ${e.aprobado ? '✓ Aprobada' : '⏳ Pendiente'}
+                            <span style="color: ${
+                                e.estado === 'aprobada'
+                                    ? '#4ade80'
+                                    : e.estado === 'rechazada'
+                                        ? '#ef4444'
+                                        : '#fbbf24'
+                            }; font-weight: 600; font-size: 14px;">
+                                ${
+                                    e.estado === 'aprobada'
+                                        ? '✓ Aprobada'
+                                        : e.estado === 'rechazada'
+                                            ? '✗ Rechazada'
+                                            : '⏳ Pendiente'
+                                }
                             </span>
                         </div>
                     </div>
@@ -213,29 +226,21 @@
 
             const { error } = await client
                 .from('empresas')
-                .update({ aprobado: true })
+                .update({ estado: 'aprobada', aprobado: true })
                 .eq('id', id);
 
             if (error) throw error;
 
-            if (typeof showNotification === 'function') {
-                showNotification('Empresa aprobada correctamente', 'success');
-            } else {
-                alert('Empresa aprobada correctamente');
-            }
+            alert('Empresa aprobada correctamente');
             cargarPanel();
         } catch (error) {
             console.error('Error al aprobar:', error);
-            if (typeof showNotification === 'function') {
-                showNotification('Error al aprobar empresa: ' + error.message, 'error');
-            } else {
-                alert('Error al aprobar empresa: ' + error.message);
-            }
+            alert('Error al aprobar empresa: ' + error.message);
         }
     }
 
     async function rechazarEmpresa(id) {
-        if (!confirm('¿Rechazar esta empresa? Se eliminará del registro permanentemente.')) return;
+        if (!confirm('¿Rechazar esta empresa? Se marcará como rechazada.')) return;
 
         try {
             const client = window.supabaseClient || window.supabase;
@@ -243,24 +248,16 @@
 
             const { error } = await client
                 .from('empresas')
-                .delete()
+                .update({ estado: 'rechazada', aprobado: false })
                 .eq('id', id);
 
             if (error) throw error;
 
-            if (typeof showNotification === 'function') {
-                showNotification('Empresa rechazada y eliminada', 'success');
-            } else {
-                alert('Empresa rechazada y eliminada');
-            }
+            alert('Empresa rechazada');
             cargarPanel();
         } catch (error) {
             console.error('Error al rechazar:', error);
-            if (typeof showNotification === 'function') {
-                showNotification('Error al rechazar empresa: ' + error.message, 'error');
-            } else {
-                alert('Error al rechazar empresa: ' + error.message);
-            }
+            alert('Error al rechazar empresa: ' + error.message);
         }
     }
 
