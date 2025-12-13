@@ -129,14 +129,14 @@
 
             if (error) throw error;
 
-            // USAMOS 'estado'
+            // Usamos 'estado' para los contadores
             const pendientes = empresas.filter(e => e.estado === 'pendiente');
             const activas = empresas.filter(e => e.estado === 'aprobada');
 
             contadorPendientes.textContent = pendientes.length;
             contadorActivas.textContent = activas.length;
 
-            // Pendientes
+            // --- Solicitudes Pendientes ---
             if (!pendientes.length) {
                 pendientesEl.innerHTML = '<p style="color: var(--text-gray); padding: 20px; text-align: center;">No hay solicitudes pendientes.</p>';
             } else {
@@ -158,10 +158,10 @@
                         <strong>Necesidades:</strong> ${e.necesidades}
                     </p>
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn-aprobar" data-id="${e.id}" style="background: #4ade80; color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                        <button class="btn-aprobar" data-user-id="${e.user_id}" style="background: #4ade80; color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
                             ✓ Aprobar
                         </button>
-                        <button class="btn-rechazar" data-id="${e.id}" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                        <button class="btn-rechazar" data-user-id="${e.user_id}" style="background: #ef4444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
                             ✗ Rechazar
                         </button>
                     </div>
@@ -170,14 +170,14 @@
                 });
 
                 document.querySelectorAll('.btn-aprobar').forEach(btn => {
-                    btn.addEventListener('click', () => aprobarEmpresa(btn.dataset.id));
+                    btn.addEventListener('click', () => aprobarEmpresa(btn.dataset.userId));
                 });
                 document.querySelectorAll('.btn-rechazar').forEach(btn => {
-                    btn.addEventListener('click', () => rechazarEmpresa(btn.dataset.id));
+                    btn.addEventListener('click', () => rechazarEmpresa(btn.dataset.userId));
                 });
             }
 
-            // Todas las empresas
+            // --- Todas las empresas ---
             if (!empresas.length) {
                 listaEl.innerHTML = '<p style="color: var(--text-gray); padding: 20px; text-align: center;">Aún no hay empresas registradas.</p>';
             } else {
@@ -217,7 +217,7 @@
         }
     }
 
-    async function aprobarEmpresa(id) {
+    async function aprobarEmpresa(userId) {
         if (!confirm('¿Aprobar esta empresa? Podrá acceder a su panel.')) return;
 
         try {
@@ -227,19 +227,19 @@
             const { error } = await client
                 .from('empresas')
                 .update({ estado: 'aprobada', aprobado: true })
-                .eq('id', id);
+                .eq('user_id', userId);
 
             if (error) throw error;
 
             alert('Empresa aprobada correctamente');
-            cargarPanel();
+            await cargarPanel();
         } catch (error) {
             console.error('Error al aprobar:', error);
             alert('Error al aprobar empresa: ' + error.message);
         }
     }
 
-    async function rechazarEmpresa(id) {
+    async function rechazarEmpresa(userId) {
         if (!confirm('¿Rechazar esta empresa? Se marcará como rechazada.')) return;
 
         try {
@@ -249,12 +249,12 @@
             const { error } = await client
                 .from('empresas')
                 .update({ estado: 'rechazada', aprobado: false })
-                .eq('id', id);
+                .eq('user_id', userId);
 
             if (error) throw error;
 
             alert('Empresa rechazada');
-            cargarPanel();
+            await cargarPanel();
         } catch (error) {
             console.error('Error al rechazar:', error);
             alert('Error al rechazar empresa: ' + error.message);
